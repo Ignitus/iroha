@@ -37,6 +37,8 @@ namespace iroha {
           auto hash = tx->hash();
           proposal_set_.insert(hash);
           log_->info("on proposal stateless success: {}", hash.hex());
+          // different on_next() calls (this one and below) can happen in
+          // different threads and we don't expect emitting them concurrently
           std::lock_guard<std::mutex> lock(notifier_mutex_);
           notifier_.get_subscriber().on_next(
               shared_model::builder::DefaultTransactionStatusBuilder()
@@ -79,7 +81,7 @@ namespace iroha {
               }
               proposal_set_.clear();
 
-              for (auto tx_hash : candidate_set_) {
+              for (auto &tx_hash : candidate_set_) {
                 log_->info("on commit committed: {}", tx_hash.hex());
                 std::lock_guard<std::mutex> lock(notifier_mutex_);
                 notifier_.get_subscriber().on_next(

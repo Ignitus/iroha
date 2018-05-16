@@ -63,6 +63,8 @@ namespace iroha {
 
       logger::Logger log_;
 
+      /// prevents from emitting new tx statuses from different threads
+      /// in parallel
       std::mutex notifier_mutex_;
     };
   }  // namespace torii

@@ -51,27 +51,7 @@ namespace torii {
           std::static_pointer_cast<shared_model::proto::TransactionResponse>(
               iroha_response);
       auto tx_hash = proto_response->transactionHash();
-      auto res = cache_->findItem(tx_hash);
-      if (not res) {
-        // TODO 05/03/2018 andrei IR-1046 Server-side shared model object
-        // factories with move semantics
-        auto response = shared_model::proto::TransactionStatusBuilder()
-                            .txHash(tx_hash)
-                            .notReceived()
-                            .build();
-        log_->info(
-            "Response not found: adding item to cache: {}, status NOT "
-            "RECEIVED",
-            tx_hash.hex());
-        cache_->addItem(tx_hash, response.getTransport());
-      } else {
-        auto proto_status = proto_response->getTransport().tx_status();
-        res->set_tx_status(proto_status);
-        log_->info("Response found: updating cache: {}, status {}",
-                   tx_hash.hex(),
-                   proto_status);
-        cache_->addItem(tx_hash, *res);
-      }
+      cache_->addItem(tx_hash, proto_response->getTransport());
     });
   }
 
@@ -90,6 +70,8 @@ namespace torii {
                     &iroha_tx) {
               tx_hash = iroha_tx.value.hash();
               if (cache_->findItem(tx_hash)) {
+                log_->warn("Found transaction {} in cache, ignoring",
+                           tx_hash.hex());
                 return;
               }
 
@@ -120,9 +102,9 @@ namespace torii {
                   iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
               response.set_error_message(std::move(error.error));
             });
-    log_->info("Torii: adding item to cache: {}, status {} ",
-               tx_hash.hex(),
-               response.tx_status());
+    log_->debug("Torii: adding item to cache: {}, status {} ",
+                tx_hash.hex(),
+                response.tx_status());
     cache_->addItem(tx_hash, response);
   }
 
@@ -150,9 +132,9 @@ namespace torii {
                    iroha::bytestringToHexstring(request.tx_hash()));
         response.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
       }
-      log_->info("Status: adding item to cache: {}, status {}",
-                 tx_hash.hex(),
-                 response.tx_status());
+      log_->debug("Status: adding item to cache: {}, status {}",
+                  tx_hash.hex(),
+                  response.tx_status());
       cache_->addItem(tx_hash, response);
     }
   }

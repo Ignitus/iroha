@@ -18,9 +18,9 @@ properties([parameters([
   booleanParam(defaultValue: false, description: '', name: 'MacOS'),
   booleanParam(defaultValue: true, description: '', name: 'WinSM'),
   booleanParam(defaultValue: false, description: 'Whether build docs or not', name: 'Doxygen'),
-  booleanParam(defaultValue: false, description: 'Whether build Java bindings', name: 'JavaBindings'),
+  booleanParam(defaultValue: true, description: 'Whether build Java bindings', name: 'JavaBindings'),
   choice(choices: 'Release\nDebug', description: 'Java Bindings Build Type', name: 'JBBuildType'),
-  booleanParam(defaultValue: true, description: 'Whether build Python bindings', name: 'PythonBindings'),
+  booleanParam(defaultValue: false, description: 'Whether build Python bindings', name: 'PythonBindings'),
   choice(choices: 'Release\nDebug', description: 'Python Bindings Build Type', name: 'PBBuildType'),
   choice(choices: 'python3\npython2', description: 'Python Bindings Version', name: 'PBVersion'),
   booleanParam(defaultValue: false, description: 'Whether build Android bindings', name: 'AndroidBindings'),
@@ -477,8 +477,8 @@ pipeline {
       steps {
         script {
           def bindings = load ".jenkinsci/bindings.groovy"
-          //bindings.doJavaBindingsWin(params.JBBuildType)
-          bindings.doPythonBindingsWin(params.PBBuildType)
+          bindings.doJavaBindingsWin(params.JBBuildType)
+          //bindings.doPythonBindingsWin(params.PBBuildType)
         }
       }
       post {

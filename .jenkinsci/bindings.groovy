@@ -34,7 +34,8 @@ def doJavaBindingsWin(buildType=Release) {
       -DSWIG_JAVA=ON
   """
   sh "cmake --build build --target irohajava"
-  sh "zip -j $artifactsPath build/shared_model/bindings/*.java build/shared_model/bindings/libirohajava.so"
+  sh "cd build; ctest -R java --output-on-failure"
+  //sh "zip -j $artifactsPath build/shared_model/bindings/*.java build/shared_model/bindings/libirohajava.so"
   return artifactsPath
 }
 
